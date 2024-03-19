@@ -1,5 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using TodoList.Api;
 using TodoList.Api.Data;
+using TodoList.Api.Extensions;
+using TodoList.Api.Repositories;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,8 +17,15 @@ builder.Services.AddDbContext<TodoListDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+builder.Services.AddTransient<ITaskRepository, TaskRepository>();
 
 var app = builder.Build();
+
+app.MigrateDbContext<TodoListDbContext>((context, services) =>
+{
+    var logger = services.GetRequiredService<ILogger<TodoListDbContextSeed>>();
+    new TodoListDbContextSeed().SeedAsync(context, logger).Wait();
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -30,3 +41,16 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+var host = CreateHostBuilder(args).Build();
+host.Run();
+
+
+IHostBuilder CreateHostBuilder(string[] args)
+{
+    return Host.CreateDefaultBuilder(args)
+        .ConfigureWebHostDefaults(webBuilder =>
+        {
+            webBuilder.UseStartup<Startup>();
+        });
+}
