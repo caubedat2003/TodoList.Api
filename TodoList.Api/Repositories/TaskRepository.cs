@@ -1,6 +1,7 @@
 ﻿
 using Microsoft.EntityFrameworkCore;
 using TodoList.Api.Data;
+using TodoList.Models;
 
 namespace TodoList.Api.Repositories
 {
@@ -13,7 +14,9 @@ namespace TodoList.Api.Repositories
         }
         public async Task<IEnumerable<Entities.Task>> GetTasksList()
         {
-            return await _context.Tasks.ToListAsync();
+            return await _context.Tasks
+                .Include(x => x.Assignee).ToListAsync();
+                
         }
         public async Task<Entities.Task> Create(Entities.Task task)
         {

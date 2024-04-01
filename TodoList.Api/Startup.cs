@@ -12,6 +12,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using TodoList.Api.Data;
+using TodoList.Api.Repositories;
 
 namespace TodoList.Api
 {
@@ -36,6 +37,7 @@ namespace TodoList.Api
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "TodoList.Api", Version = "v1" });
             });
+            services.AddTransient<ITaskRepository, TaskRepository>();
             // Add any additional services here
         }
 

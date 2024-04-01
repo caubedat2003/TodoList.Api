@@ -1,4 +1,5 @@
-﻿using Task = TodoList.Api.Entities.Task;
+﻿using TodoList.Models;
+using Task = TodoList.Api.Entities.Task;
 
 namespace TodoList.Api.Repositories
 {
