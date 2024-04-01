@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
 using TodoList.Api.Entities;
-using TodoList.Api.Enums;
+using TodoList.Models.Enums;
 using Task = System.Threading.Tasks.Task;
 
 namespace TodoList.Api.Data
