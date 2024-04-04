@@ -17,7 +17,6 @@ builder.Services.AddDbContext<TodoListDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
-builder.Services.AddTransient<ITaskRepository, TaskRepository>();
 
 builder.Services.AddCors(options =>
 {
@@ -28,6 +27,8 @@ builder.Services.AddCors(options =>
         .AllowAnyHeader()
         .AllowCredentials());
 });
+
+builder.Services.AddTransient<ITaskRepository, TaskRepository>();
 
 var app = builder.Build();
 
@@ -46,11 +47,13 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseRouting();
+
+app.UseCors("CorsPolicy");
+
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.UseCors();
 
 app.Run();
 
