@@ -80,13 +80,14 @@ namespace TodoList.Api.Controllers
         public async Task<IActionResult> GetById(Guid id)
         {
             var task = await _taskRepository.GetById(id);
-            if(task == null) return NotFound($"{id} is not found!");
+            if (task == null) return NotFound($"{id} is not found!");
             return Ok(new TaskDto()
             {
                 Name = task.Name,
                 Status = task.Status,
                 Id = task.Id,
                 AssigneeId = task.AssigneeId,
+                AssigneeName = task.Assignee != null ? task.Assignee.FirstName + " " + task.Assignee.LastName : "N/A",
                 Priority = task.Priority,
                 CreatedDate = task.CreatedDate
             });
