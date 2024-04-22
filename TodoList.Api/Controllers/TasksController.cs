@@ -7,6 +7,7 @@ using TodoList.Api.Entities;
 
 namespace TodoList.Api.Controllers
 {
+
     [Route("api/[controller]")]
     [ApiController]
     public class TasksController : ControllerBase
@@ -15,11 +16,11 @@ namespace TodoList.Api.Controllers
         public TasksController(ITaskRepository taskRepository) {
             _taskRepository = taskRepository;
         }
-        //api/tasks
+        //api/tasks?name=
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] TaskListSearch taskListSearch)
         {
-            var tasks = await _taskRepository.GetTasksList();
+            var tasks = await _taskRepository.GetTasksList(taskListSearch);
             var taskDtos = tasks.Select(x => new TaskDto()
             {
                 Status = x.Status,
@@ -33,7 +34,7 @@ namespace TodoList.Api.Controllers
             return Ok(taskDtos);
         }
         [HttpPost]
-        public async Task<IActionResult> Create(TaskCreateRequest request)
+        public async Task<IActionResult> Create([FromBody]TaskCreateRequest request)
         {
             if(!ModelState.IsValid)
             {
@@ -42,7 +43,7 @@ namespace TodoList.Api.Controllers
             var task = await _taskRepository.Create(new Entities.Task()
             {
                 Name = request.Name,
-                Priority = request.Priority,
+                Priority = request.Priority.HasValue ? request.Priority.Value : Priority.Low,
                 Status = Status.Open,
                 CreatedDate = DateTime.Now,
                 Id = request.Id
@@ -73,6 +74,7 @@ namespace TodoList.Api.Controllers
                 CreatedDate = taskResult.CreatedDate
             });
         }
+        private readonly IUserRepository _userRepository;
         //api/tasks/xxxx
         //[HttpGet(":id")]
         [HttpGet]
@@ -91,6 +93,18 @@ namespace TodoList.Api.Controllers
                 Priority = task.Priority,
                 CreatedDate = task.CreatedDate
             });
+            //var tasks = await _taskRepository.GetTasksList();
+            //var taskDtos = tasks.Select(x => new TaskDto()
+            //{
+            //    Status = x.Status,
+            //    Name = x.Name,
+            //    AssigneeId = x.AssigneeId,
+            //    CreatedDate = x.CreatedDate,
+            //    Priority = x.Priority,
+            //    Id = x.Id,
+            //    AssigneeName = x.Assignee != null ? x.Assignee.FirstName + " " + x.Assignee.LastName : "N/A"
+            //});
+            //for()
         }
     }
 }

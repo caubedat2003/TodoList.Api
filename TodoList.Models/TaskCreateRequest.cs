@@ -11,10 +11,11 @@ namespace TodoList.Models
 {
     public class TaskCreateRequest
     {
-        public Guid Id { get; set; }
-        [MaxLength(250)]
-        [Required]
+        public Guid Id { get; set; } = Guid.NewGuid();
+        [MaxLength(20, ErrorMessage ="Task name has over 20 characters")]
+        [Required(ErrorMessage ="Please enter task name")]
         public string Name { get; set; }
-        public Priority Priority { get; set; }
+        [Required(ErrorMessage ="Please select a priority")]
+        public Priority? Priority { get; set; }
     }
 }

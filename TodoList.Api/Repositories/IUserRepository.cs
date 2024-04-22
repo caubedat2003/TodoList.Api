@@ -6,5 +6,7 @@ namespace TodoList.Api.Repositories
     public interface IUserRepository
     {
         Task<List<User>> GetUserList();
+
+        Task<User> GetUserById(Guid id);
     }
 }

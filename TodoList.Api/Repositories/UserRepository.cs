@@ -16,7 +16,7 @@ namespace TodoList.Api.Repositories
         {
             return await _context.Users.ToListAsync();
         }
-        public async Task<Entities.User> GetById(Guid id)
+        public async Task<Entities.User> GetUserById(Guid id)
         {
             return await _context.Users.FindAsync(id);
         }

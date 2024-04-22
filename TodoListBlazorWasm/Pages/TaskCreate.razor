@@ -1,0 +1,50 @@
+﻿@page "/taskCreate"
+@using TodoList.Models;
+@using TodoList.Models.Enums;
+@using TodoListBlazorWasm.Services;
+@inject ITaskApiClient TaskApiClient;
+@inject NavigationManager NavigationManager;
+
+<h3>TaskCreate</h3>
+
+<EditForm Model="Task" OnValidSubmit="SubmitTask">
+    <DataAnnotationsValidator />
+    <div class="form-group">
+        <label for="Name">Name</label>
+        <InputText class="form-control" @bind-Value="Task.Name"></InputText>
+        <ValidationMessage For="()=>Task.Name"></ValidationMessage>
+        <small id="nameHelp" class="form-text text-muted">Please enter task title here.</small>
+    </div>
+
+    <div class="form-group">
+        <label for="Priority">Priority</label>
+        <InputSelect class="form-control" @bind-Value="Task.Priority">
+            <option>Select a priority</option>
+            @foreach (string item in Enum.GetNames(typeof(Priority)))
+            {
+                <option value="@item">@item</option>
+            }
+        </InputSelect>
+        <ValidationMessage For="()=>Task.Priority"></ValidationMessage>
+        <small id="priorityHelp" class="form-text text-muted">Please choose a priority.</small>
+    </div>
+    
+    <button type="submit" class="btn btn-primary">Submit</button>
+</EditForm>
+
+@code {
+    private TaskCreateRequest Task = new TaskCreateRequest();
+
+    private async Task SubmitTask(EditContext context)
+    {
+        var result = await TaskApiClient.CreateTask(Task);
+        if (result)
+        {
+            NavigationManager.NavigateTo("TaskList");
+        }
+        else
+        {
+            
+        }
+    }
+}
