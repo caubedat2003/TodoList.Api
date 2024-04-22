@@ -12,11 +12,21 @@ namespace TodoList.Api.Repositories
         {
             _context = context;
         }
-        public async Task<IEnumerable<Entities.Task>> GetTasksList()
+        public async Task<IEnumerable<Entities.Task>> GetTasksList(TaskListSearch taskListSearch)
         {
-            return await _context.Tasks
-                .Include(x => x.Assignee).ToListAsync();
-                
+            var query = _context.Tasks
+                .Include(x => x.Assignee).AsQueryable();
+ 
+            if(!string.IsNullOrEmpty(taskListSearch.Name))
+                query = query.Where(x => x.Name.Contains(taskListSearch.Name));
+
+            if (taskListSearch.AssigneeId.HasValue)
+                query = query.Where(x => x.AssigneeId == taskListSearch.AssigneeId.Value);
+
+            if (taskListSearch.Priority.HasValue)
+                query = query.Where(x => x.Priority == taskListSearch.Priority.Value);
+
+            return await query.OrderByDescending(x=>x.CreatedDate).ToListAsync();
         }
         public async Task<Entities.Task> Create(Entities.Task task)
         {
@@ -40,7 +50,20 @@ namespace TodoList.Api.Repositories
 
         public async Task<Entities.Task> GetById(Guid id)
         {
-            return await _context.Tasks.FindAsync(id);
+            //return await _context.Tasks.FindAsync(id);
+
+            return await _context.Tasks
+                .Include(x => x.Assignee).AsQueryable().Where(x => x.Id == id).FirstAsync();
         }
+
+        //public async Task<PagedList<Task>> GetTaskListByUserId (Guid userid, TaskListSearch taskListSearch)
+        //{
+        //    var query = _context.Tasks
+        //        .Where(x => x.AssigneeId == userid)
+        //        .Include(x => x.Assignee).AsQueryable();
+
+        //    if(!string.IsNullOrEmpty(taskListSearch.Name))
+        //        query = query.Where(x => x.Name.Contains(taskListSearch.Name))
+        //}
     }
 }
