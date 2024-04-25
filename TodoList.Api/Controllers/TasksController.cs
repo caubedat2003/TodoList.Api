@@ -13,7 +13,8 @@ namespace TodoList.Api.Controllers
     public class TasksController : ControllerBase
     {
         private readonly ITaskRepository _taskRepository;
-        public TasksController(ITaskRepository taskRepository) {
+        public TasksController(ITaskRepository taskRepository)
+        {
             _taskRepository = taskRepository;
         }
         //api/tasks?name=
@@ -29,14 +30,14 @@ namespace TodoList.Api.Controllers
                 CreatedDate = x.CreatedDate,
                 Priority = x.Priority,
                 Id = x.Id,
-                AssigneeName = x.Assignee != null? x.Assignee.FirstName + " " + x.Assignee.LastName : "N/A"
+                AssigneeName = x.Assignee != null ? x.Assignee.FirstName + " " + x.Assignee.LastName : "N/A"
             });
             return Ok(taskDtos);
         }
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody]TaskCreateRequest request)
+        public async Task<IActionResult> Create([FromBody] TaskCreateRequest request)
         {
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
@@ -48,11 +49,11 @@ namespace TodoList.Api.Controllers
                 CreatedDate = DateTime.Now,
                 Id = request.Id
             });
-            return CreatedAtAction(nameof(GetById), new {id = task.Id} , task);
+            return CreatedAtAction(nameof(GetById), new { id = task.Id }, task);
         }
         [HttpPut]
         [Route("{id}")]
-        public async Task<IActionResult> Update(Guid id,TaskUpdateRequest request)
+        public async Task<IActionResult> Update(Guid id, [FromBody] TaskUpdateRequest request)
         {
             if (!ModelState.IsValid)
             {
@@ -66,7 +67,7 @@ namespace TodoList.Api.Controllers
             var taskResult = await _taskRepository.Update(taskFromDb);
             return Ok(new TaskDto()
             {
-                Name= taskResult.Name,
+                Name = taskResult.Name,
                 Status = taskResult.Status,
                 Id = taskResult.Id,
                 AssigneeId = taskResult.AssigneeId,
@@ -105,6 +106,26 @@ namespace TodoList.Api.Controllers
             //    AssigneeName = x.Assignee != null ? x.Assignee.FirstName + " " + x.Assignee.LastName : "N/A"
             //});
             //for()
+        }
+        [HttpDelete]
+        [Route("{id}")]
+        public async Task<IActionResult> Delete([FromRoute] Guid id)
+        {
+            var task = await _taskRepository.GetById(id);
+            if(task == null) return NotFound($"{id} is not found!");
+
+            await _taskRepository.Delete(task);
+            if (task == null) return NotFound($"{id} is not found!");
+            return Ok(new TaskDto()
+            {
+                Name = task.Name,
+                Status = task.Status,
+                Id = task.Id,
+                AssigneeId = task.AssigneeId,
+                AssigneeName = task.Assignee != null ? task.Assignee.FirstName + " " + task.Assignee.LastName : "N/A",
+                Priority = task.Priority,
+                CreatedDate = task.CreatedDate
+            });
         }
     }
 }

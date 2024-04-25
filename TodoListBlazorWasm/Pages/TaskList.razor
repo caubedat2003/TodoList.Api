@@ -1,54 +1,19 @@
 ﻿@page "/TaskList"
 @using TodoListBlazorWasm.Components;
 @using TodoList.Models.Enums
+@inject IToastService toastService
+@inject IConfiguration Configuration
 
 <h3>TodoList</h3>
 
-@if(Tasks == null || Assignees == null)
+@if(Tasks == null)
 {
     <LoadingIndicator></LoadingIndicator>
 }
 else
 {
     <div class="row">
-        <EditForm Model="@TaskListSearch" OnSubmit=@SearchForm>
-            <div class="row">
-                <div class="col">
-                    <label>Name</label>
-                    <InputText class="form-control" @bind-Value="TaskListSearch.Name"></InputText>
-                </div>
-
-                <div class="col">
-                    <label>Assignee</label>
-                    <InputSelect class="form-control" @bind-Value="TaskListSearch.AssigneeId">
-                        <option>Select an assignee</option>
-                        @foreach (var assignee in Assignees)
-                        {
-                            <option value="@assignee.Id">@assignee.FullName</option>
-                        }
-                    </InputSelect>
-                </div>
-
-                <div class="col">
-                    <label>Priority</label>
-                    <InputSelect class="form-control" @bind-Value="TaskListSearch.Priority">
-                        <option>Select a priority</option>
-                        @foreach (string item in Enum.GetNames(typeof(Priority)))
-                        {
-                            <option value="@item">@item</option>
-                        }
-                    </InputSelect>
-                </div>
-
-                <div class="col pt-4">
-                    <button type="submit" class="btn btn-primary">Search</button>
-                </div>
-
-                <div class="col pt-4">
-                    <a href="/taskCreate" class="btn btn-success">Create</a>
-                </div>
-            </div>
-        </EditForm>
+        <TaskSearch OnSearch="SearchTask"></TaskSearch>
     </div>
 
     <div class="row mt4">
@@ -60,6 +25,7 @@ else
                     <th>Assignee</th>
                     <th>Date</th>
                     <th>Status</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -67,18 +33,25 @@ else
                 {
                     <tr>
                         <td>@item.Name</td>
-                        <td>@item.Priority</td>
+                        <td><PriorityLabel Priority="item.Priority"></PriorityLabel></td>
                         <td>@item.AssigneeName</td>
-                        <td>@item.CreatedDate.ToString("dd/MM/yyyy hh:mm")</td>
-                        <td>@item.Status</td>
+                        <td>@item.CreatedDate.ToString(Configuration["DateTimeFormat"])</td>
+                        <td><StatusLabel Status="item.Status"></StatusLabel></td>
                         <td>
-                            <a href="/taskDetails/@item.Id">Detail</a>
+                            <a href="/taskDetails/@item.Id" class="btn btn-primary">Detail</a>
+                            <a href="/taskEdit/@item.Id" class="btn btn-warning">Edit</a>
+                            <button class="btn btn-danger" @onclick="()=>OnDeleteTask(item.Id)">Delete</button>
                         </td>
                     </tr>
                 }
             </tbody>
         </table>
     </div>
-    
+    <Confirmation ConfirmationMessage="Are you sure to delete?"
+                  ConfirmationTitle="Delete Task"
+                  @ref="DeleteConfirmation"
+                  ConfirmationChanged="OnConfirmDeleteTask">
+
+    </Confirmation>
 }
 
