@@ -1,9 +1,11 @@
 ﻿
+using Blazored.Toast.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using System.Threading.Tasks;
 using TodoList.Models;
 using TodoList.Models.Enums;
+using TodoListBlazorWasm.Components;
 using TodoListBlazorWasm.Services;
 
 namespace TodoListBlazorWasm.Pages
@@ -11,23 +13,36 @@ namespace TodoListBlazorWasm.Pages
     public partial class TaskList
     {
         [Inject] private ITaskApiClient TaskApiClient { set; get; }
-        [Inject] private IUserApiClient UserApiClient { set; get; }
+        [Inject] private IToastService ToastService { set; get; }
+
+        protected Confirmation DeleteConfirmation { set; get; }
+        private Guid DeletedId { set; get; }
 
         private List<TaskDto> Tasks;
-
-        private List<AssigneeDto> Assignees;
 
         private TaskListSearch TaskListSearch = new TaskListSearch();
 
         protected override async Task OnInitializedAsync()
         {
             Tasks = await TaskApiClient.GetTaskList(TaskListSearch);
-            Assignees = await UserApiClient.GetAssignees();
         }
-
-        private async Task SearchForm(EditContext context)
+        public async Task SearchTask(TaskListSearch taskListSearch)
         {
+            TaskListSearch = taskListSearch;
             Tasks = await TaskApiClient.GetTaskList(TaskListSearch);
+        }
+        public void OnDeleteTask(Guid deletedId)
+        {
+            DeletedId = deletedId;
+            DeleteConfirmation.Show();
+        }
+        public async Task OnConfirmDeleteTask(bool deleteConfirmed)
+        {
+            if(deleteConfirmed)
+            {
+                await TaskApiClient.DeleteTask(DeletedId);
+                Tasks = await TaskApiClient.GetTaskList(TaskListSearch);
+            }
         }
     }
 }

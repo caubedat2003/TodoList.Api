@@ -4,8 +4,9 @@
 @using TodoListBlazorWasm.Services;
 @inject ITaskApiClient TaskApiClient;
 @inject NavigationManager NavigationManager;
+@inject IToastService toastService
 
-<h3>TaskCreate</h3>
+<h3>Task Create</h3>
 
 <EditForm Model="Task" OnValidSubmit="SubmitTask">
     <DataAnnotationsValidator />
@@ -40,11 +41,12 @@
         var result = await TaskApiClient.CreateTask(Task);
         if (result)
         {
+            toastService.ShowSuccess($"{Task.Name} has been created successfully.");
             NavigationManager.NavigateTo("TaskList");
         }
         else
         {
-            
+            toastService.ShowError("An error occured in progress. Please contact to administrator.");
         }
     }
 }
