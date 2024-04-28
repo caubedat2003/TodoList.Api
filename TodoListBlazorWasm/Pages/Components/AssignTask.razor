@@ -17,7 +17,7 @@
                     </div>
                     <div class="modal-body">
                     
-                            <div class="form-group">
+                            <div class="mb-3">
                                 <label for="recipient-name" class="col-form-label">Select an user to assign this task:</label>
                                 <InputSelect class="form-control" @bind-Value="Model.UserId">
                                     <option value="@Guid.Empty">Select an user</option>
@@ -82,6 +82,7 @@
         {
             ShowDialog = false;
             await CloseEventCallback.InvokeAsync(true);
+            toastService.ShowSuccess("Assign user successfully");
         }
         else
         {
