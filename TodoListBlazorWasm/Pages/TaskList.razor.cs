@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using TodoList.Models;
 using TodoList.Models.Enums;
 using TodoListBlazorWasm.Components;
+using TodoListBlazorWasm.Pages.Components;
 using TodoListBlazorWasm.Services;
 
 namespace TodoListBlazorWasm.Pages
@@ -16,6 +17,7 @@ namespace TodoListBlazorWasm.Pages
         [Inject] private IToastService ToastService { set; get; }
 
         protected Confirmation DeleteConfirmation { set; get; }
+        protected AssignTask AssignTaskDialog { set; get; }
         private Guid DeletedId { set; get; }
 
         private List<TaskDto> Tasks;
@@ -41,6 +43,17 @@ namespace TodoListBlazorWasm.Pages
             if(deleteConfirmed)
             {
                 await TaskApiClient.DeleteTask(DeletedId);
+                Tasks = await TaskApiClient.GetTaskList(TaskListSearch);
+            }
+        }
+        public void OpenAssignPopup(Guid Id)
+        {
+            AssignTaskDialog.Show(Id);
+        }
+        public async Task AssignTaskSuccess(bool result)
+        {
+            if (result)
+            {
                 Tasks = await TaskApiClient.GetTaskList(TaskListSearch);
             }
         }
