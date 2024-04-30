@@ -5,9 +5,11 @@ using Microsoft.AspNetCore.Components.Forms;
 using System.Threading.Tasks;
 using TodoList.Models;
 using TodoList.Models.Enums;
+using TodoList.Models.SeedWork;
 using TodoListBlazorWasm.Components;
 using TodoListBlazorWasm.Pages.Components;
 using TodoListBlazorWasm.Services;
+using TodoListBlazorWasm.Layout;
 
 namespace TodoListBlazorWasm.Pages
 {
@@ -22,16 +24,21 @@ namespace TodoListBlazorWasm.Pages
 
         private List<TaskDto> Tasks;
 
+        private MetaData MetaData { set; get; } = new MetaData();
+
         private TaskListSearch TaskListSearch = new TaskListSearch();
+
+        [CascadingParameter]
+        private Error Error { set; get; }
 
         protected override async Task OnInitializedAsync()
         {
-            Tasks = await TaskApiClient.GetTaskList(TaskListSearch);
+            await GetTask();
         }
         public async Task SearchTask(TaskListSearch taskListSearch)
         {
             TaskListSearch = taskListSearch;
-            Tasks = await TaskApiClient.GetTaskList(TaskListSearch);
+            await GetTask();
         }
         public void OnDeleteTask(Guid deletedId)
         {
@@ -43,7 +50,7 @@ namespace TodoListBlazorWasm.Pages
             if(deleteConfirmed)
             {
                 await TaskApiClient.DeleteTask(DeletedId);
-                Tasks = await TaskApiClient.GetTaskList(TaskListSearch);
+                await GetTask();
             }
         }
         public void OpenAssignPopup(Guid Id)
@@ -54,8 +61,27 @@ namespace TodoListBlazorWasm.Pages
         {
             if (result)
             {
-                Tasks = await TaskApiClient.GetTaskList(TaskListSearch);
+                //Tasks = await TaskApiClient.GetTaskList(TaskListSearch);
+                await GetTask();
             }
+        }
+        public async Task GetTask()
+        {
+            try
+            {
+                var pagingResponse = await TaskApiClient.GetTaskList(TaskListSearch);
+                Tasks = pagingResponse.Items;
+                MetaData = pagingResponse.MetaData;
+            }
+            catch(Exception ex)
+            {
+                Error.ProcessError(ex);
+            }
+        }
+        private async Task SelectedPage(int page)
+        {
+            TaskListSearch.PageNumber = page;
+            await GetTask();
         }
     }
 }
