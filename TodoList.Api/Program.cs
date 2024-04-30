@@ -1,13 +1,35 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using TodoList.Api;
 using TodoList.Api.Data;
+using TodoList.Api.Entities;
 using TodoList.Api.Extensions;
 using TodoList.Api.Repositories;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
+var Configuration = builder.Configuration;
 // Add services to the container.
+
+builder.Services.AddIdentity<User, Role>()
+    .AddEntityFrameworkStores<TodoListDbContext>();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = Configuration["JwtIssuer"],
+            ValidAudience = Configuration["JwtAudience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JwtSecurityKey"]))
+        };
+    });
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -51,6 +73,8 @@ app.UseHttpsRedirection();
 app.UseRouting();
 
 app.UseCors("CorsPolicy");
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

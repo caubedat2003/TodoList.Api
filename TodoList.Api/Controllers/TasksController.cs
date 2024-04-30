@@ -4,6 +4,7 @@ using TodoList.Api.Repositories;
 using TodoList.Models;
 using TodoList.Models.Enums;
 using TodoList.Api.Entities;
+using TodoList.Models.SeedWork;
 
 namespace TodoList.Api.Controllers
 {
@@ -21,8 +22,8 @@ namespace TodoList.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] TaskListSearch taskListSearch)
         {
-            var tasks = await _taskRepository.GetTasksList(taskListSearch);
-            var taskDtos = tasks.Select(x => new TaskDto()
+            var pagedList = await _taskRepository.GetTasksList(taskListSearch);
+            var taskDtos = pagedList.Items.Select(x => new TaskDto()
             {
                 Status = x.Status,
                 Name = x.Name,
@@ -32,7 +33,10 @@ namespace TodoList.Api.Controllers
                 Id = x.Id,
                 AssigneeName = x.Assignee != null ? x.Assignee.FirstName + " " + x.Assignee.LastName : "N/A"
             });
-            return Ok(taskDtos);
+            return Ok(new PagedList<TaskDto>(taskDtos.ToList(), 
+                pagedList.MetaData.TotalCount,
+                pagedList.MetaData.CurrentPage,
+                pagedList.MetaData.PageSize));
         }
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] TaskCreateRequest request)
