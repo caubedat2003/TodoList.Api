@@ -63,14 +63,28 @@ namespace TodoList.Api.Repositories
                 .Include(x => x.Assignee).AsQueryable().Where(x => x.Id == id).FirstAsync();
         }
 
-        //public async Task<PagedList<Task>> GetTaskListByUserId (Guid userid, TaskListSearch taskListSearch)
-        //{
-        //    var query = _context.Tasks
-        //        .Where(x => x.AssigneeId == userid)
-        //        .Include(x => x.Assignee).AsQueryable();
+        public async Task<PagedList<Entities.Task>> GetTasksListByUserId(Guid userId, TaskListSearch taskListSearch)
+        {
+            var query = _context.Tasks
+                .Where(x=>x.AssigneeId == userId)
+                .Include(x => x.Assignee).AsQueryable();
 
-        //    if(!string.IsNullOrEmpty(taskListSearch.Name))
-        //        query = query.Where(x => x.Name.Contains(taskListSearch.Name))
-        //}
+            if (!string.IsNullOrEmpty(taskListSearch.Name))
+                query = query.Where(x => x.Name.Contains(taskListSearch.Name));
+
+            if (taskListSearch.AssigneeId.HasValue)
+                query = query.Where(x => x.AssigneeId == taskListSearch.AssigneeId.Value);
+
+            if (taskListSearch.Priority.HasValue)
+                query = query.Where(x => x.Priority == taskListSearch.Priority.Value);
+
+            var count = query.Count();
+
+            var data = await query.OrderByDescending(x => x.CreatedDate)
+                .Skip((taskListSearch.PageNumber - 1) * taskListSearch.PageSize)
+                .Take(taskListSearch.PageSize)
+                .ToListAsync();
+            return new PagedList<Entities.Task>(data, count, taskListSearch.PageNumber, taskListSearch.PageSize);
+        }
     }
 }
